@@ -1,0 +1,26 @@
+name: CI
+on:
+  push:
+    branches: [ feature/scaffold-app, main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Run telegram test (if token provided)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+            python3 tools/send_telegram.py "CI: build triggered for $GITHUB_REPOSITORY"
+          else
+            echo "No TELEGRAM_BOT_TOKEN secret set; skipping telegram test"
+          fi
